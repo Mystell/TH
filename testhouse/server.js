@@ -1,17 +1,15 @@
-function sleep(ms) {
-	var dt = new Date();
-	dt.setTime(dt.getTime() + ms);
-	while (new Date().getTime() < dt.getTime())
-		;
-}
+var app = require('express')()
+  , server = require('http').createServer(app)
+  , io = require('socket.io').listen(server);
 
-var html = require('fs').readFileSync(__dirname + '/public/index.html');
-var app = require('http').createServer(function(req, res) {
-	res.end(html);
+server.listen(80);
+
+app.get('/', function (req, res) {
+  res.sendfile(__dirname + '/public/index.html');
 });
-app.listen(80);
-var io = require("socket.io");
-var io = io.listen(app);
+
+
+
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({
