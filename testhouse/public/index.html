@@ -1,0 +1,108 @@
+<html>
+<head>
+<style type="text/css">
+table {
+	border-collapse: separate;
+	border-spacing: 0px 0px;
+	width: 50%;
+}
+
+th {
+	font-family: monospace;
+	width: 50%;
+	padding: 5px;
+	background-color: #D0E3FA;
+	background-image: url(sky.jpg);
+}
+
+td {
+	font-family: sans-serif;
+	border-color: #6495ed;
+	border-style: solid;
+	border-width: 1px;
+	padding: 1px;
+	text-align: center;
+	background-color: #ffffff;
+}
+
+caption {
+	font-family: sans-serif;
+}
+</style>
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+	var socket = io.connect();
+	socket.on('setGrid', function(rows) {
+		//remplir la grille
+		var table = "";
+		var indRow = 0;
+		for ( var i = 0; i < rows.length; i++) {
+			if (indRow != parseInt(rows[i].row)) { //nouvelle ligne
+				table = table + '<tr>';
+				indRow = parseInt(rows[i].row);
+			}
+			table = table + '<td>' + rows[i].valeur + '</td>';
+			if (i + 1 == rows.length) {
+				table = table + '</tr>';
+			} else if (indRow != parseInt(rows[i + 1].row)) {
+				table = table + '</tr>';
+			}
+		}
+		$("#grid").append(table);
+	});
+	socket.on('getSelCel', function(id) {
+		$("#" + id).css("border-color", "red");
+	});
+	function jquerySelCelu(id) {
+		socket.emit('setSelCel', id);
+	}
+
+	function jqueryGetGrid(id) {
+		socket.emit('getGrid', id);
+	}
+</script>
+</head>
+<body>
+	<div>
+		<table>
+			<tbody id="grid">
+
+			</tbody>
+		</table>
+	</div>
+
+	<script>
+		/*$("p").on( "mouseover", function() {
+			$(this).css( "color", "red" );
+		});*/
+		$('td').bind('click', function() {
+			$(this).css("border-color", "red");
+			jquerySelCelu($(this).attr('id'));
+			//alert($(this).attr('id'));
+		});
+
+		$(document).ready(function() {
+			//récupération de la variable idtab dans l'url
+			var idTab = 1;
+			var url = document.URL;
+			var arrayUrl = url.split("?");
+			if (arrayUrl.length > 1) {
+				var params = arrayUrl[1].split("&");
+				if (params.length > 0) {
+					var param = [];
+					for ( var i = 0; i < params.length; i++) {
+						param = params[i].split("=");
+						if (param[0] == 'idtab') {
+							idTab = param[1];
+						}
+					}
+				}
+			}
+
+			//envoi de la demande de la grid idtab
+			jqueryGetGrid(idTab);
+		});
+	</script>
+</body>
+</html>
